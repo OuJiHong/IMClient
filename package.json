@@ -1,0 +1,31 @@
+{
+  "name": "imclient",
+  "version": "1.0.0",
+  "description": "及时聊天客户端",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "start": "webpack-dev-server --hot --inline --open"
+  },
+  "keywords": [
+    "IMClient",
+    "即时通讯"
+  ],
+  "author": "OJH",
+  "license": "MIT",
+  "devDependencies": {
+    "clean-webpack-plugin": "^0.1.16",
+    "css-loader": "^0.28.5",
+    "file-loader": "^0.11.2",
+    "html-loader": "^0.5.1",
+    "html-webpack-plugin": "^2.30.1",
+    "style-loader": "^0.18.2",
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.7.1"
+  },
+  "dependencies": {
+    "jquery": "^1.12.4",
+    "strophe.js": "^1.2.14"
+  }
+}
