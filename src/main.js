@@ -9,7 +9,10 @@ import LoginInit from "./component/login";
 import "./css/reset.css";
 import "./css/common.css";
 
+import * as stropheJs from "strophe.js";
+
 window.util = util;
+window.stropheJs = stropheJs;
 
 $(function(){
 

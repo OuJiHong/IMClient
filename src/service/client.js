@@ -62,7 +62,8 @@ const eventType = {
     connectSuccess:"connectSuccess",
     connectStatusChange:"connectStatusChange",
     connectError:"connectError",
-    disconnect:"disconnect"
+    disconnect:"disconnect",
+    changeUserStatus:"changeUserStatus"
 };
 
 //连接状态翻译
@@ -80,6 +81,14 @@ statusMap[Status.DISCONNECTING] = "目前连接被终止";
 statusMap[Status.ATTACHED] = "已附加的连接";
 statusMap[Status.REDIRECT] = "连接被重定向";
 statusMap[Status.CONNTIMEOUT] = "连接已超时";
+
+//可用的用户状态
+const userStatusMap = {
+    online:{show:"available", status:"上线"},
+    leave:{show:"away", status:"离开"},
+    dnd:{show:"do not disturb", status:"忙碌"},
+    offline:{show:"unavailable", status:"下线"}
+};
 
 /**
  * 事件绑定存储
@@ -175,6 +184,7 @@ function Client(username, password){
  * @returns {Strophe.Connection|Connection}
  */
 Client.prototype.connect = function(){
+    var _this = this;
     var connection = this.connection;
     //重置连接，以便重复利用
     connection.reset();
@@ -185,6 +195,8 @@ Client.prototype.connect = function(){
     var callback = function(status){
         if(status == Strophe.Status.CONNECTED){
             //连接成功
+            _this.setUserStatus();//初始化用户在线状态
+
             var successMsg = statusMap[status];
             triggerHandler(eventType.connectSuccess, connection, [status, successMsg]);
 
@@ -234,6 +246,46 @@ Client.prototype.sendMessage = function(jid, msg){
     return this;
 };
 
+/**
+ * 设置用户状态，
+ * 发送一个初始化的"出席节"到服务器，服务器会通知每一个订阅自己的每一个人
+ *
+ */
+Client.prototype.setUserStatus = function(status){
+    var changeTimeout = 6000;
+    var connection = this.connection;
+    if(status == null){
+        var emptyPresence = $pres();//构建一个空的presence元素
+        this.connection.send(emptyPresence.tree());
+    }else{
+        var statusObj = status;
+        if(typeof status == "string"){
+            statusObj = userStatusMap[status];
+        }
+
+        //改变状态
+        var presence = $pres();
+        for(var key in statusObj){
+            presence.root();
+            presence.c(key).t(statusObj[key]);//添加子节点，然后设置节点内容
+        }
+        //发送出席状态
+        connection.sendPresence(presence, function(stanza){
+            //success
+            triggerHandler(eventType.changeUserStatus, connection, ["success", stanza]);
+        }, function(stanza){
+            //error
+            if(stanza == null){
+                //表示超时
+                triggerHandler(eventType.changeUserStatus, connection, ["error", stanza]);
+            }else{
+                triggerHandler(eventType.changeUserStatus, connection, ["timeout", stanza]);
+            }
+        }, changeTimeout);
+    }
+
+};
+
 
 /**
  * 添加事件处理
@@ -277,12 +329,17 @@ Client.prototype.onDisConnect = function(handler){
     return this;
 };
 
+Client.prototype.onChangeUserStatus = function(){
+    addHandler(eventType.changeUserStatus, handler);
+    return this;
+};
 
 
 /**
  * 导出客户端
  */
 export {
-    Client
+    Client,
+    userStatusMap
 };
 

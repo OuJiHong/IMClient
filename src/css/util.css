@@ -114,8 +114,8 @@
 .util-mask-toast.deactive{
     -webkit-animation-fill-mode:both;
     animation-fill-mode:both;
-    -webkit-animation:shirt 200ms;
-    animation:bounceOut 200ms;
+    -webkit-animation:fadeOut 200ms;
+    animation:fadeOut 200ms;
 }
 
 /**对话框**/
@@ -304,7 +304,7 @@
     }
 
     to {
-        opacity:1
+        opacity:1;
 
     }
 
@@ -316,11 +316,36 @@
     }
 
     to {
-        opacity:1
+        opacity:1;
 
     }
 
 }
+
+@-webkit-keyframes fadeOut{
+    from {
+        opacity:1;
+    }
+
+    to {
+        opacity:0;
+
+    }
+
+}
+
+@keyframes fadeOut{
+    from {
+        opacity:1;
+    }
+
+    to {
+        opacity:0;
+
+    }
+
+}
+
 
 @-webkit-keyframes bounceIn{
     from {
