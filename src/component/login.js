@@ -1,5 +1,5 @@
 import $ from "jquery";
-import login from '../templates/login.art'
+import loginTemplate from '../templates/login.art'
 import util from "../service/util";
 import { Logger } from "../service/logger";
 
@@ -9,7 +9,7 @@ const logger = new Logger("login");
 
 export default function LoginInit() {
 
-    var loginContent = login();
+    var loginContent = loginTemplate();
     var popupOperation = util.popup(loginContent);
 
     var $form = popupOperation.dom.find("form");
