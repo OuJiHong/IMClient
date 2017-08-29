@@ -1,0 +1,32 @@
+
+<section  class="common-dialog">
+    <header  class="common-dialog-header" popup-header >
+        帐号登录
+        <a href="javascript:;" class="common-close-btn" popup-close >&times;</a>
+    </header>
+    <form class="common-form">
+        <div class="common-form-group common-row">
+            <div class="common-cell">
+                用户名
+            </div>
+            <div class="common-cell wth4">
+                <input type="text" class="common-form-input"  name="username"/>
+            </div>
+        </div>
+
+        <div class="common-form-group common-row">
+            <div class="common-cell">
+                密码
+            </div>
+            <div class="common-cell wth4">
+                <input type="password" class="common-form-input"  name="password"/>
+            </div>
+        </div>
+
+        <div class="common-form-group">
+
+            <button  type="submit" class="common-button">提交</button>
+        </div>
+    </form>
+
+</section>

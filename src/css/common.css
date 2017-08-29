@@ -1,0 +1,132 @@
+
+.common-dialog{
+    border:solid 1px #dedede;
+    background-color:#fff;
+    box-shadow:0px 0px 12px #ddd;
+    width:480px;
+}
+
+.common-dialog-header{
+    position:relative;
+    padding:8px;
+    height:60px;
+    line-height:44px;
+    cursor:move;
+    background-color:#f2f2f2;
+}
+
+/***表单***/
+.common-form{
+    display:block;
+    padding:10px;
+}
+
+
+.common-form-group{
+    display:block;
+    padding:8px 10px;
+    border-top:solid 1px #e2e2e2;
+}
+
+.common-form-group:first-child{
+    border-top:none;
+}
+
+.common-form-input{
+    height:30px;
+    border:solid 1px #dedede;
+    padding-left:14px;
+    width:100%;
+}
+
+.common-form-input:focus{
+    -webkit-box-shadow:0px 0px 6px rgba(163,201,223,0.6);
+    box-shadow:0px 0px 6px rgba(163,201,223,0.6);
+}
+
+.common-row{
+    padding: 10px 15px;
+    position: relative;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+
+}
+
+.common-cell{
+    height:30px;
+    line-height:30px;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+}
+
+.common-cell.wth1{
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+}
+.common-cell.wth2{
+    -webkit-box-flex: 2;
+    -webkit-flex: 2;
+    flex: 2;
+}
+.common-cell.wth3{
+    -webkit-box-flex: 3;
+    -webkit-flex: 3;
+    flex: 3;
+}
+.common-cell.wth4{
+    -webkit-box-flex: 4;
+    -webkit-flex: 4;
+    flex: 4;
+}
+
+
+.common-button{
+    display:block;
+    width:100%;
+    line-height:48px;
+    height:48px;
+    text-align:center;
+    font-size:16px;
+    background-color: #4cdd3d;
+    border:solid 1px #dedede;
+    border-radius:4px;
+    cursor:pointer;
+}
+
+.common-button:focus{
+    outline:none;
+}
+
+.common-button:hover{
+    background-color: #42dd42;
+}
+
+.common-button:active{
+    background-color: #44dd35;
+    box-shadow:0px 3px 9px #666 inset;
+}
+
+.common-close-btn{
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:10px;
+    margin:auto;
+    display:inline-block;
+    vertical-align:middle;
+    font-size:24px;
+    width:24px;
+    height:24px;
+    line-height:24px;
+    color:#555;
+}
+
+.common-close-btn:hover{
+    color:red;
+}
