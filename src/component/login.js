@@ -2,6 +2,8 @@ import $ from "jquery";
 import loginTemplate from '../templates/login.art'
 import util from "../service/util";
 import { Logger } from "../service/logger";
+import imService from "../service/imService";
+
 
 
 const logger = new Logger("login");
@@ -25,7 +27,8 @@ export default function LoginInit() {
             return false;
         }
 
-        logger.debug("登录成功...");
+        imService.initClient(formData.username, formData.password);
+
     });
 
 

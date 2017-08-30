@@ -120,7 +120,14 @@ function showLoading(msg, hostDom){
     operation.open();
     operation.active();
 
-    return operation;
+    var msgOperation  = {
+        changeMsg:function(newMsg){
+            $msg.html(newMsg);
+        }
+    };
+
+    $.extend(msgOperation, operation);
+    return msgOperation;
 
 }
 
