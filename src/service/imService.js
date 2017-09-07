@@ -9,6 +9,11 @@ const logger = new Logger("imService");
 
 let currentClient = null;
 
+/**
+ * 初始化客户端
+ * @param username
+ * @param password
+ */
 function initClient(username, password){
 
 
@@ -46,8 +51,7 @@ function initClient(username, password){
     });
 
 
-    //test
-    window.cc = currentClient;
+
 }
 
 

@@ -3,11 +3,7 @@
  * jquery 的扩展
  */
 
+import jQuery from "jquery";
 
-var jQuery = require("jquery");
-
-window.jQuery = jQuery;
-window.$ = jQuery;
 require("velocity-animate");
 require("velocity-animate/velocity.ui.js");
-module.exports = jQuery;

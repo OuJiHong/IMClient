@@ -1,6 +1,6 @@
 import $ from "jquery";
-import loginTemplate from '../templates/login.art'
-import util from "../service/util";
+import loginTemplate from './login.art'
+import util from "../util/util";
 import { Logger } from "../service/logger";
 import imService from "../service/imService";
 

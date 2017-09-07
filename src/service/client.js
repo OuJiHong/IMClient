@@ -150,7 +150,7 @@ function Client(username, password){
 
     if(this instanceof Client){
         this._cacheEventMap = {};
-
+        this.requestTimeout = 6000;
         this.username = username;
         this.password = password;
 
@@ -237,7 +237,7 @@ Client.prototype.connect = function(){
         _this.trigger(eventType.connectStatusChange, connection, [status, statusMsg]);
     };
 
-    var wait = 9;//超时时间
+    var wait = this.requestTimeout;//超时时间
     var hold = null;
     var route = null;
     var authcid = null;
@@ -287,7 +287,9 @@ Client.prototype.sendMessage = function(jid, status, msg){
     }
 
     let type = "chat";//一对一聊天
-    let msgObj = $msg({from:this.authcid, to:jid, type:type});
+    let fullFrom = Strophe.getBareJidFromJid(this.authcid).toLowerCase() + "@" + serverHost;
+    let fullTo = Strophe.getBareJidFromJid(to).toLowerCase() + "@" + serverHost;
+    let msgObj = $msg({from:fullFrom, to:fullTo, type:type});
     if(msg != null){
         msgObj.root();
         msgObj.c("body", null, msg);
@@ -349,7 +351,7 @@ Client.prototype.addChatStatus = function(msgObj, status, type){
  */
 Client.prototype.setUserStatus = function(status){
     var _this = this;
-    var changeTimeout = 6;//超时时间
+    var changeTimeout =  this.requestTimeout;//超时时间
     var connection = this.connection;
     if(status == null){
         var emptyPresence = $pres();//构建一个空的presence元素
@@ -383,6 +385,24 @@ Client.prototype.setUserStatus = function(status){
 
 
 };
+
+/**
+ * 获取花名册
+ * @returns {Promise}
+ */
+Client.prototype.getRoster = function(){
+    var connection = this.connection;
+    var stanza = $iq({type: 'get'}).c('query', {xmlns: Strophe.NS.ROSTER});
+
+
+    var promise = new Promise(function(resolve, reject){
+        connection.sendIQ(stanza, resolve, reject);
+    });
+
+    return promise;
+
+};
+
 
 
 /**
