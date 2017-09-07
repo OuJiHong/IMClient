@@ -2,7 +2,7 @@
  * 主程序入口
  *
  */
-import $ from "./service/jquery.extension";
+import $ from "jquery";
 import util  from "./service/util";
 import LoginInit from "./component/login";
 
