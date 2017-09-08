@@ -196,6 +196,16 @@ Client.prototype.fullJid = function(jid){
 }
 
 /**
+ * 只取jid
+ * @param jid
+ * @returns {string}
+ */
+Client.prototype.bareJid = function(jid){
+    var val = Strophe.getBareJidFromJid(jid);
+    return val ? val.toLowerCase() : val;
+}
+
+/**
  * 只取名称
  * @param jid
  * @returns {string}
@@ -239,7 +249,7 @@ Client.prototype._initDataListener = function(){
 
     var messageHandler = function(stanza){
         logger.debug("收到来自‘"+stanza.getAttribute("from")+"’消息:" + stanza.innerHTML );
-        _this.emit(eventType.message, stanza);
+        _this.emit(eventType.message, [stanza]);
        return keepLive;
     };
 

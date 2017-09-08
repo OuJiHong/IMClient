@@ -1,4 +1,4 @@
 <div>
-    用户状态
+    用户状态:{{statusMsg}}
 
 </div>

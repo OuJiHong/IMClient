@@ -95,13 +95,13 @@ function createChatPanel(jid){
     $panel.html(chatPanelTemplate(initData));
 
     //监听消息
-    client().onmessage(function(stanza){
+    client().onMessage(function(stanza){
         var $stanza = $(stanza);
-        var from = $stanza.attr("from");
+        var from = client().bareJid($stanza.attr("from"));
         if(jid == from){
             //添加消息到面板
-            var subject = $stanza.children("subject");
-            var body = $stanza.children("body");
+            var subject = $stanza.find("subject");
+            var body = $stanza.find("body");
             var msgObj = {
                 subject:subject.html(),
                 body:body.html()
@@ -110,7 +110,6 @@ function createChatPanel(jid){
             //渲染区域
             var renderArea = $panel.find(".xmpp-chat-content");
             msgStore.addMsg(renderArea, chatMsgTemplate, msgObj);
-
 
         }
     });

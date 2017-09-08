@@ -13,6 +13,25 @@ import { openChat } from "../chat";
 var logger = new Logger("roster");
 
 /**
+ * 查找花名册用户
+ * @param rosterNode
+ * @param jid
+ * @returns {*|{}|T|{ID, TAG, NAME, CLASS}}
+ */
+function findRosterItem(rosterNode, jid ){
+   return  rosterNode.find(".roster-item[data-jid='"+jid+"']");
+}
+
+/**
+ * 获取所有
+ * @returns {*|{}|T|{ID, TAG, NAME, CLASS}}
+ */
+function findAllItem(rosterNode){
+    return  rosterNode.find(".roster-item");
+}
+
+
+/**
  * 初始化花名册
  */
 function initRoster(){
@@ -22,22 +41,26 @@ function initRoster(){
     var rosterNode = $("<article></article>");
     rosterPromise.then(function(stanza){
         var $stanza = $(stanza);
-        var infoList = [];
         $stanza.find("query>item").each(function(index, node){
             var $node = $(node);
+            var jid = $node.attr("jid");
+            var name = $node.attr("name");
+            var subscription = $node.attr("subscription");
             var info = {
-                jid:$node.attr("jid"),
-                name:$node.attr("name"),
-                subscription:$node.attr("subscription")
+                index:index,
+                jid:jid,
+                name:name,
+                subscription:subscription
             };
-            infoList.push(info);
+
+            //移除存在的条目
+            findRosterItem(rosterNode, jid).remove();
+
+            var rosterItem = rosterTemplate(info);
+            rosterNode.append(rosterItem);
         });
 
-        var initData = {
-            infoList:infoList
-        };
 
-        rosterNode.html(rosterTemplate(initData));
     });
 
 
@@ -47,6 +70,42 @@ function initRoster(){
         openChat(toJid);
     });
 
+
+    //监听用户状态
+    client().off("userStatusChange").onUserStatusChange(function(stanza, statusMsg){
+
+        //不包括本身
+        var from = client().bareJid(stanza.getAttribute("from"));
+        var jid = client().fullJid(client().authcid);
+
+        if(jid != from ){
+
+            var name = stanza.getAttribute("name");
+            var subscription = stanza.getAttribute("subscription");
+            var curItem = findRosterItem(rosterNode, from);
+            if(curItem.length == 0){
+                //创建新的条目
+                var index = findAllItem(rosterNode).length;
+                var info = {
+                    index:index,
+                    jid:from,
+                    name:name,
+                    subscription:subscription
+                };
+
+                var rosterItem = rosterTemplate(info);
+                rosterNode.append(rosterItem);
+
+            }else{
+                //修改状态动作
+                curItem.find(".xmpp-user-status").html(statusMsg);
+            }
+
+        }
+
+
+
+    });
 
     return rosterNode;
 

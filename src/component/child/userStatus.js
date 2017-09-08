@@ -30,6 +30,20 @@ function initUserStatus(){
     //用户状态变动
     client().off("userStatusChange").onUserStatusChange(function(stanza, statusMsg){
         logger.debug("用户状态改变：" + stanza.outerHTML + ">>" + statusMsg);
+
+        //只判断本身
+        var from = client().bareJid(stanza.getAttribute("from"));
+        var jid = client().fullJid(client().authcid);
+
+        if(jid == from){
+
+            initData = {
+                statusMsg:statusMsg
+            };
+
+            userStatusNode.html(userStatusTemplate(initData));
+        }
+
     });
 
 

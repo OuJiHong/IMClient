@@ -1,11 +1,3 @@
-<div>
-    出席状态：
-    <ul>
-        {{each    infoList as info i }}
-        <li style="border-bottom:solid 1px red;">
-            <a href="javascript:;"  class="roster-item"  data-jid="{{info.jid}}">{{i}}.{{info.name || info.jid}}</a>
-        </li>
-        {{/each}}
-    </ul>
-
+<div style="border-bottom:solid 1px red;">
+    <a href="javascript:;"  class="roster-item"  data-jid="{{jid}}">{{index}}.{{jid}}</a>
 </div>

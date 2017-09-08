@@ -243,7 +243,9 @@ header,nav,section,article ,aside,footer{
 }
 
 .xmpp-chat-content{
+    position:relative;
     height:240px;
+    overflow:auto;
     border-bottom:solid 1px #ccc;
 }
 
