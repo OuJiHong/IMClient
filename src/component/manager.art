@@ -1,0 +1,11 @@
+<section class="xmpp-common-panel xmpp-manager-container">
+    <div class="xmpp-manager-header" popup-header >
+        <div data-xmpp="header"></div>
+        <span class="xmpp-close-btn">&times;</span>
+    </div>
+    <div class="xmpp-manager-body" data-xmpp="body">
+
+
+    </div>
+
+</section>

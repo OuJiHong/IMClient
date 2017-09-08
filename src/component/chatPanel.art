@@ -1,0 +1,19 @@
+<div class="xmpp-chat-pro">
+    <form novalidate >
+    <div class="xmpp-chat-header" popup-header  >
+        头部信息 -- {{jid}}
+        <span class="xmpp-common-close-btn" data-xmpp-ref="{{panelId}}" >&times;</span>
+    </div>
+    <div>
+        <div class="xmpp-chat-content">
+
+
+        </div>
+        <textarea name="message">
+
+
+        </textarea>
+        <button type="submit">发送</button>
+    </div>
+    </form>
+</div>

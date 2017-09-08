@@ -1,0 +1,4 @@
+<div class='xmpp-chat-user-item'  data-xmpp-ref="{{panelId}}">
+    <span class="xmpp-chat-user-jid">{{jid}}</span>
+    <span class="xmpp-common-close-btn" data-xmpp-ref="{{panelId}}">&times;</span>
+</div>

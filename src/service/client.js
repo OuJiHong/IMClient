@@ -102,6 +102,8 @@ const Status = Strophe.Status;
 const statusMap = {
 
 };
+
+
 statusMap[Status.ERROR] = "发生了一个错误";
 statusMap[Status.CONNECTING] = "当前正在连接";
 statusMap[Status.CONNFAIL] = "连接请求失败";
