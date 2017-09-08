@@ -1,12 +1,41 @@
 
-.common-dialog{
-    border:solid 1px #dedede;
+/**兼容**/
+header,nav,section,article ,aside,footer{
+    display:block;
+}
+
+.xmpp-common-panel{
+    font-family:"PingFang SC","微软雅黑","Microsoft YaHei",Helvetica,"Helvetica Neue",Tahoma,Arial,sans-serifl;
     background-color:#fff;
-    box-shadow:0px 0px 12px #ddd;
+    -webkit-box-shadow:0px 0px 60px rgba(100,100,100,0.3);
+    box-shadow:0px 0px 60px rgba(100,100,100,0.3);
+    color:#333;
+    font-size:12px;
+}
+
+.xmpp-common-panel *{
+    -weblot-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    -o-box-sizing:border-box;
+    box-sizing:border-box;
+
+}
+
+.xmpp-common-panel a{
+    text-decoration:none;
+}
+
+.xmpp-common-panel a:hover{
+    color:red;
+}
+
+
+.xmpp-common-dialog{
+    border:solid 1px #dedede;
     width:480px;
 }
 
-.common-dialog-header{
+.xmpp-common-dialog-header{
     position:relative;
     padding:8px 20px;
     height:60px;
@@ -16,35 +45,35 @@
 }
 
 /***表单***/
-.common-form{
+.xmpp-common-form{
     display:block;
     padding:10px;
 }
 
 
-.common-form-group{
+.xmpp-common-form-group{
     display:block;
     padding:8px 10px;
     border-top:solid 1px #e2e2e2;
 }
 
-.common-form-group:first-child{
+.xmpp-common-form-group:first-child{
     border-top:none;
 }
 
-.common-form-input{
+.xmpp-common-form-input{
     height:30px;
     border:solid 1px #dedede;
     padding-left:14px;
     width:100%;
 }
 
-.common-form-input:focus{
+.xmpp-common-form-input:focus{
     -webkit-box-shadow:0px 0px 6px rgba(163,201,223,0.6);
     box-shadow:0px 0px 6px rgba(163,201,223,0.6);
 }
 
-.common-row{
+.xmpp-common-row{
     padding: 10px 15px;
     position: relative;
     display: -webkit-box;
@@ -56,7 +85,7 @@
 
 }
 
-.common-cell{
+.xmpp-common-cell{
     height:30px;
     line-height:30px;
     -webkit-box-flex: 1;
@@ -64,29 +93,29 @@
     flex: 1;
 }
 
-.common-cell.wth1{
+.xmpp-common-cell.wth1{
     -webkit-box-flex: 1;
     -webkit-flex: 1;
     flex: 1;
 }
-.common-cell.wth2{
+.xmpp-common-cell.wth2{
     -webkit-box-flex: 2;
     -webkit-flex: 2;
     flex: 2;
 }
-.common-cell.wth3{
+.xmpp-common-cell.wth3{
     -webkit-box-flex: 3;
     -webkit-flex: 3;
     flex: 3;
 }
-.common-cell.wth4{
+.xmpp-common-cell.wth4{
     -webkit-box-flex: 4;
     -webkit-flex: 4;
     flex: 4;
 }
 
 
-.common-button{
+.xmpp-common-button{
     display:block;
     width:100%;
     line-height:48px;
@@ -99,20 +128,20 @@
     cursor:pointer;
 }
 
-.common-button:focus{
+.xmpp-common-button:focus{
     outline:none;
 }
 
-.common-button:hover{
+.xmpp-common-button:hover{
     background-color: #42dd42;
 }
 
-.common-button:active{
+.xmpp-common-button:active{
     background-color: #44dd35;
     box-shadow:0px 3px 9px #666 inset;
 }
 
-.common-close-btn{
+.xmpp-common-close-btn{
     position:absolute;
     top:0;
     bottom:0;
@@ -125,8 +154,120 @@
     height:24px;
     line-height:24px;
     color:#555;
+    cursor:pointer;
 }
 
-.common-close-btn:hover{
+.xmpp-common-close-btn:hover{
     color:red;
+}
+
+
+
+/***manager**/
+.xmpp-manager-container{
+    width:240px;
+    height:400px;
+    border:solid 1px #ddd;
+    margin-right:50px;
+}
+
+.xmpp-manager-header{
+    position:relative;
+    height:40px;
+    line-height:40px;
+    background-color:#ddd;
+    cursor:move;
+}
+
+.xmpp-manager-body{
+    background-color:#fff;
+    padding:8px 12px;
+}
+
+
+
+.xmpp-close-btn{
+    position:absolute;
+    top:0px;
+    bottom:0px;
+    right:14px;
+    margin:auto;
+    display:inline-block;
+    height:20px;
+    line-height:20px;
+    width:20px;
+    font-size:20px;
+    color:#333;
+    cursor:pointer;
+}
+
+.xmpp-close-btn:hover{
+    color:red;
+}
+
+
+/**chat***/
+.xmpp-chat-container{
+    position:relative;
+    background-color:#ccc;
+}
+
+.xmpp-chat-container:after{
+    content:"";
+    display:table;
+    clear:both;
+}
+
+.xmpp-chat-users{
+    display:none;
+    float:left;
+    width:180px;
+}
+
+.xmpp-chat-panel{
+    float:left;
+    width:420px;
+}
+
+.xmpp-chat-pro{
+    width:420px;
+    background-color:#fff;
+}
+
+.xmpp-chat-header{
+    position:relative;
+    height:40px;
+    line-height:40px;
+    background-color:#ccc;
+    cursor:move;
+}
+
+.xmpp-chat-content{
+    height:240px;
+    border-bottom:solid 1px #ccc;
+}
+
+.xmpp-chat-user-item{
+    display:none;
+    position:relative;
+    line-height:24px;
+    font-size:14px;
+    color:#555;
+    background-color:transparent;
+}
+
+.xmpp-chat-user-item.xmpp-listable{
+    display:block;
+}
+
+.xmpp-chat-user-item.active{
+    background-color:#ddd;
+}
+
+.xmpp-chat-user-jid{
+    display:inline-block;
+    width:70%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }

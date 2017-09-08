@@ -5,6 +5,8 @@
 */
 
 import './util.css';
+import $ from "jquery";
+
 
 const cacheData = {
     _cacheId:1000,
@@ -46,7 +48,7 @@ function createMask(options, hostDom){
     }
 
     var nextId = cacheData.nextId();
-    var maskId = "mask_" + nextId;
+    var maskId = "xmppMask_" + nextId;
     var $maskContainer = $("<div class='util-mask-container'></div>");
     $maskContainer.attr("id", maskId);
 
@@ -329,6 +331,7 @@ function popup(options, hostDom){
     var config = {
         overlay:false,
         content:null,
+        hideIdent:"popup-hide",
         closeIdent:"popup-close",
         headerIdent:"popup-header",
         position:"center"
@@ -392,8 +395,13 @@ function popup(options, hostDom){
 
     var $content  = maskOperation.content;
     //可关闭
-    $content.find("["+config.closeIdent+"]").click(function(evt){
+    $content.on("click", "["+config.closeIdent+"]", function(evt){
         operation.close();
+    });
+
+    //可隐藏
+    $content.on("click", "["+config.hideIdent+"]", function(evt){
+        operation.hide();
     });
 
     //可移动
@@ -624,6 +632,49 @@ function showError(error){
         type:"error"
     });
 }
+
+/**
+ * html 编码
+ * @param content
+ * @returns {*}
+ */
+function escapeHtml(content){
+    if(content == null){
+        return content;
+    }
+
+    var escapeMap = {
+        "<": "&#60;",
+        ">": "&#62;",
+        '"': "&#34;",
+        "'": "&#39;",
+        "&": "&#38;"
+    };
+
+    return content.toString().replace(/&(?![\w#]+;)|[<>"']/g, function (s) {
+        return escapeMap[s];
+    });
+}
+
+/**
+ * 转换成16进制
+ * @param str
+ */
+function toHex(str){
+    var hexAry = []
+    for(let i = 0; i < str.length ;i++){
+        let ch = str.charCodeAt(i);
+        var chStr = ch.toString(16);
+        if(chStr.length < 2){
+            chStr = "0" + chStr;
+        }
+        hexAry.push(chStr);
+
+    }
+
+    return hexAry.join("");
+}
+
 //工具对象
 var util = {
     showLoading:showLoading,
@@ -637,7 +688,9 @@ var util = {
     formData:formData,
     isEmpty:isEmpty,
     showError:showError,
-    additionErrorHandler:additionErrorHandler
+    additionErrorHandler:additionErrorHandler,
+    escapeHtml:escapeHtml,
+    toHex:toHex
 };
 
 export default  util;

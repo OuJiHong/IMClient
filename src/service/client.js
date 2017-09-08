@@ -6,6 +6,7 @@
 import { Strophe, $build, $msg, $iq, $pres } from "strophe.js";
 
 import { Logger , LevelType } from "./logger";
+import $ from "jquery";
 
 /**
  * 连接状态常量
@@ -146,10 +147,13 @@ Strophe.addNamespace('RSM', 'http://jabber.org/protocol/rsm');
 Strophe.addNamespace('XFORM', 'jabber:x:data');
 
 
+
 function Client(username, password){
 
     if(this instanceof Client){
+        var _this = this;
         this._cacheEventMap = {};
+        this._cacheHandlers = [];
         this.requestTimeout = 6000;
         this.username = username;
         this.password = password;
@@ -157,33 +161,15 @@ function Client(username, password){
         //创建一个连接对象
         this.connection = new Strophe.Connection(serverAddress, {});
 
-        //初始化
-        let ns = "";
-        let name = null;
-        let type = "error";
-        let id = null;
-        let from = null;
-        let options = {
-            keepalive:true
-        };
-
-        let handlerAll = this.connection.addHandler(function(stanzas){
-            logger.debug(stanzas);
-        }, ns, name, type, id, from ,options);
-
-
-        //连接
-        this.connect();
-
     }else{
         throw new Error("Please use the new  Client  object creation");
     }
 
 }
 
-//缓存事件处理函数
-Client.prototype._cacheEventMap  = null;
-
+//缓存事件处理函数,全局
+Client.prototype._cacheEventMap  = {};
+Client.prototype._cacheHandlers = [];
 
 Client.prototype.generateResource = function () {
     return '/client-' + Math.floor(Math.random()*139749825).toString();
@@ -191,32 +177,122 @@ Client.prototype.generateResource = function () {
 
 
 /**
+ * 完整名称
+ * @param jid
+ * @returns {string}
+ */
+Client.prototype.fullJid = function(jid){
+    if(jid == null){
+        return jid;
+    }
+    var findIndex = jid.indexOf("@");
+    if(findIndex > 0){
+        jid = jid.substring(0, findIndex);
+    }
+    var fullJid = jid  + "@" + serverHost;
+    return fullJid;
+}
+
+/**
+ * 只取名称
+ * @param jid
+ * @returns {string}
+ */
+Client.prototype.nodeJid = function(jid){
+    var val = Strophe.getNodeFromJid(jid);
+    return val ? val.toLowerCase() : val;
+}
+
+/**
+ * 清除监听
+ *
+ */
+Client.prototype.clearListener = function(){
+    var cacheHandlers = this._cacheHandlers;
+    while(cacheHandlers.length > 0){
+        var handler = cacheHandlers.pop();
+        this.connection.deleteHandler(handler);
+    }
+
+    if(this.clearListenerStatus != null){
+        this.clearListenerStatus();
+    }
+
+
+}
+
+
+/**
+ * 添加数据监听
+ * 添加数据监听
+ */
+Client.prototype._initDataListener = function(){
+
+    var _this = this;
+    var cacheHandlers = this._cacheHandlers;
+
+    this.clearListener();//清除监听
+
+    var keepLive = true;
+
+    var messageHandler = function(stanza){
+        logger.debug("收到来自‘"+stanza.getAttribute("from")+"’消息:" + stanza.innerHTML );
+        _this.emit(eventType.message, stanza);
+       return keepLive;
+    };
+
+
+    var presenceHandler = function(stanza){
+        _this.emit(eventType.userStatusChange, [stanza, "success"]);
+        return keepLive;
+    };
+
+
+
+    var ref1 =  this.connection.addHandler(messageHandler, null , "message");
+    var ref2 = this.connection.addHandler(presenceHandler, null, 'presence');
+
+    cacheHandlers.push(ref1);
+    cacheHandlers.push(ref2);
+
+    //提供改变内部变量的函数
+    this.clearListenerStatus = function(){
+        keepLive = false;
+    };
+
+}
+
+
+
+ /**
  * 建立连接
  * @returns
  */
 Client.prototype.connect = function(){
     var _this = this;
     var connection = this.connection;
-    //重置连接，以便重复利用
-    connection.reset();
 
+    //重置连接，以便重复利用
+    connection.resume();
+    connection.reset();
+    //connection.flush();
 
     var resource = Strophe.getResourceFromJid(this.username);
     if(!resource){
         resource = this.generateResource();
     }
 
-    var jid = Strophe.getBareJidFromJid(this.username).toLowerCase()  + "@" + serverHost;
+    var jid = this.fullJid(this.username);
     var pass = this.password;//密码可选
 
     //回调处理状态
     var callback = function(status){
+        let statusMsg = statusMap[status];
         if(status == Strophe.Status.CONNECTED  || status === Strophe.Status.ATTACHED){
             //连接成功
             _this.setUserStatus();//初始化用户在线状态
 
-            let successMsg = statusMap[status];
-            _this.trigger(eventType.connectSuccess, connection, [status, successMsg]);
+            _this.emit(eventType.connectSuccess, [status, statusMsg]);
 
             //设置别名
             _this.authzid = connection.authzid;//授权标识
@@ -225,16 +301,13 @@ Client.prototype.connect = function(){
             _this.servtype = connection.servtype;//服务类型（MD5）
 
         }else if(status == Status.ERROR || status == Status.AUTHFAIL || status == Status.CONNFAIL || status == Status.CONNTIMEOUT){
-            let errorMsg = statusMap[status];
-            _this.trigger(eventType.connectError, connection, [status, errorMsg]);
+            _this.emit(eventType.connectError, [status, statusMsg]);
         }else if(status == Status.DISCONNECTED){
-            let errorMsg = statusMap[status];
-            _this.trigger(eventType.disconnect, connection, [status, errorMsg]);
+            _this.emit(eventType.disconnect, [status, statusMsg]);
         }
 
         //连接状态改变
-        let statusMsg = statusMap[status];
-        _this.trigger(eventType.connectStatusChange, connection, [status, statusMsg]);
+        _this.emit(eventType.connectStatusChange, [status, statusMsg]);
     };
 
     var wait = this.requestTimeout;//超时时间
@@ -245,6 +318,8 @@ Client.prototype.connect = function(){
     //connection.connect(jid, pass, callback, wait, hold, route, authcid);
 
     connection.connect(jid, pass, callback, wait);
+
+    _this._initDataListener();//初始化数据监听
 
     return this;
 
@@ -261,6 +336,7 @@ Client.prototype.disconnect = function(reason){
 
     return this;
 };
+
 
 /**
  * 发送消息
@@ -280,22 +356,29 @@ Client.prototype.disconnect = function(reason){
 
  *
  */
-Client.prototype.sendMessage = function(jid, status, msg){
-    if(jid == null || status == null){
-        logger.error("未指定jid或者status");
+Client.prototype.sendMessage = function(jid, msg, status){
+    if(jid == null){
+        logger.error("未指定jid");
+        return this;
+    }
+
+    if(msg == null && status == null){
+        logger.error("msg或status不能同时为空");
         return this;
     }
 
     let type = "chat";//一对一聊天
-    let fullFrom = Strophe.getBareJidFromJid(this.authcid).toLowerCase() + "@" + serverHost;
-    let fullTo = Strophe.getBareJidFromJid(to).toLowerCase() + "@" + serverHost;
+    let fullFrom = this.fullJid(this.authcid);
+    let fullTo = this.fullJid(jid);
     let msgObj = $msg({from:fullFrom, to:fullTo, type:type});
     if(msg != null){
         msgObj.root();
         msgObj.c("body", null, msg);
     }
 
-    msgObj = this.addChatStatus(msgObj, status, type);
+    if(status != null){
+        msgObj = this.addChatStatus(msgObj, status, type);
+    }
 
     this.connection.send(msgObj);
 
@@ -371,14 +454,14 @@ Client.prototype.setUserStatus = function(status){
         //发送出席状态
         connection.sendPresence(presence, function(stanza){
             //success
-            _this.trigger(eventType.userStatusChange, connection, ["success", stanza]);
+            _this.emit(eventType.userStatusChange, [stanza, "success"]);
         }, function(stanza){
             //error
             if(stanza == null){
                 //表示超时
-                _this.trigger(eventType.userStatusChange, connection, ["error", stanza]);
+                _this.emit(eventType.userStatusChange,[stanza,"error"]);
             }else{
-                _this.trigger(eventType.userStatusChange, connection, ["timeout", stanza]);
+                _this.emit(eventType.userStatusChange, [stanza, "timeout"]);
             }
         }, changeTimeout);
     }
@@ -403,6 +486,24 @@ Client.prototype.getRoster = function(){
 
 };
 
+/**
+ * 获取用户信息
+ * @returns {Promise}
+ */
+Client.prototype.getProfile = function(){
+    var connection = this.connection;
+    var stanza = $iq({type: 'get'}).c('query', {xmlns: Strophe.NS.PROFILE});
+
+
+    var promise = new Promise(function(resolve, reject){
+        connection.sendIQ(stanza, resolve, reject);
+    });
+
+    return promise;
+
+};
+
+
 
 
 /**
@@ -411,16 +512,18 @@ Client.prototype.getRoster = function(){
  * @param handler
  * @returns {Client}
  */
-Client.prototype.on = function(name, handler){
-
+Client.prototype.on = function(eventName, handler){
+    var connection = this.connection;
     var eventMap = this._cacheEventMap;
-    if(name != null && typeof handler == "function"){
-        var handlerAry = eventMap[name];
-        if(handlerAry == null){
-            handlerAry = [];
-            eventMap[name] = handlerAry;
+    if(eventName != null && typeof handler == "function"){
+        var callbacks = eventMap[eventName];
+
+        if(callbacks == null){
+            callbacks = $.Callbacks("stopOnFalse");
+            eventMap[eventName] = callbacks;
         }
-        handlerAry.push(handler);
+
+        callbacks.add(handler);
     }
 
     return this;
@@ -431,14 +534,13 @@ Client.prototype.on = function(name, handler){
  * @param name
  * @returns {Client}
  */
-Client.prototype.off = function(name){
+Client.prototype.off = function(eventName){
+    var connection = this.connection;
     var eventMap = this._cacheEventMap;
-    var count = 0;
-    if(name != null){
-        var handlerAry = eventMap[name];
-        if(handlerAry != null){
-            count = handlerAry.length;
-            delete eventMap[name];
+    if(eventName != null){
+        var callbacks = eventMap[eventName];
+        if(callbacks != null){
+            delete eventMap[eventName];
         }
 
     }
@@ -451,20 +553,13 @@ Client.prototype.off = function(name){
  * @param name
  * @returns {Client}
  */
-Client.prototype.trigger = function(name, thisArg, args){
+Client.prototype.emit = function(eventName, args){
     var eventMap = this._cacheEventMap;
-    var count = 0;
-    if(name != null){
-        var handlerAry = eventMap[name];
-        if(handlerAry != null){
-            for(let i = 0 ; i < handlerAry.length; i++){
-                let handler = handlerAry[i];
-                handler && handler.apply(thisArg, args);
-                count++;
-            }
-
+    if(eventName != null){
+        var callbacks = eventMap[eventName];
+        if(callbacks != null){
+            callbacks.fireWith(this, args);
         }
-
     }
 
     return this;

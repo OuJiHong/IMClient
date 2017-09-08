@@ -1,31 +1,31 @@
 
-<section  class="common-dialog">
-    <header  class="common-dialog-header" popup-header >
+<section  class="xmpp-common-panel xmpp-common-dialog">
+    <header  class="xmpp-common-dialog-header" popup-header >
         帐号登录
-        <a href="javascript:;" class="common-close-btn" popup-close >&times;</a>
+        <a href="javascript:;" class="xmpp-common-close-btn" popup-close >&times;</a>
     </header>
-    <form class="common-form">
-        <div class="common-form-group common-row">
-            <div class="common-cell">
+    <form class="xmpp-common-form">
+        <div class="xmpp-common-form-group xmpp-common-row">
+            <div class="xmpp-common-cell">
                 用户名
             </div>
-            <div class="common-cell wth4">
-                <input type="text" class="common-form-input"  name="username"/>
+            <div class="xmpp-common-cell wth4">
+                <input type="text" class="xmpp-common-form-input"  name="username"/>
             </div>
         </div>
 
-        <div class="common-form-group common-row">
-            <div class="common-cell">
+        <div class="xmpp-common-form-group xmpp-common-row">
+            <div class="xmpp-common-cell">
                 密码
             </div>
-            <div class="common-cell wth4">
-                <input type="password" class="common-form-input"  name="password"/>
+            <div class="xmpp-common-cell wth4">
+                <input type="password" class="xmpp-common-form-input"  name="password"/>
             </div>
         </div>
 
-        <div class="common-form-group">
+        <div class="xmpp-common-form-group">
 
-            <button  type="submit" class="common-button">提交</button>
+            <button  type="submit" class="xmpp-common-button">提交</button>
         </div>
     </form>
 
