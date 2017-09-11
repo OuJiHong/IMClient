@@ -127,14 +127,6 @@ const chatStatusMap = {
     gone:"结束"
 };
 
-//可用的用户状态
-const userStatusMap = {
-    online:{show:"available", status:"上线"},
-    leave:{show:"away", status:"离开"},
-    dnd:{show:"do not disturb", status:"忙碌"},
-    offline:{show:"unavailable", status:"下线"}
-};
-
 
 //添加命名空间
 Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
@@ -472,17 +464,11 @@ Client.prototype.setUserStatus = function(status){
         var emptyPresence = $pres();//构建一个空的presence元素
         this.connection.send(emptyPresence.tree());
     }else{
-        var statusObj = status;
-        if(typeof status == "string"){
-            statusObj = userStatusMap[status];
-        }
 
         //改变状态
         var presence = $pres();
-        for(var key in statusObj){
-            presence.root();
-            presence.c(key).t(statusObj[key]);//添加子节点，然后设置节点内容
-        }
+        presence.c("show").t(status);
+
         //发送出席状态
         connection.sendPresence(presence, function(stanza){
             //success
@@ -639,7 +625,6 @@ Client.prototype.onUserStatusChange = function(handler){
  * 导出客户端
  */
 export {
-    Client,
-    userStatusMap
+    Client
 };
 

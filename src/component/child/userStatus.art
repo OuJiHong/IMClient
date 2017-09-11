@@ -1,4 +1,8 @@
 <div>
-    用户状态:{{statusMsg}}
-
+    用户状态:(<span class="xmpp-self-user-status">{{status.text}}</span>)
+  <select name="statusType" >
+      {{each userStatusList as statusObj}}
+        <option value="{{statusObj.value}}"  {{if status.value == statusObj.value}}selected{{/if}} >{{statusObj.text}}</option>
+      {{/each}}
+  </select>
 </div>

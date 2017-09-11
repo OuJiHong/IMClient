@@ -8,6 +8,7 @@ import $ from "jquery";
 import { client }  from "../login";
 
 
+
 var logger = new Logger("userStatus");
 
 /**
@@ -19,13 +20,31 @@ function initUserStatus(){
     var userStatusNode = $("<article></article>");
 
 
+    //可用的用户状态
+    const userStatusList = [{
+        value:"available",
+        text:"上线"
+    },{
+        value:"away",
+        text:"离开"
+    },{
+        value:"unavailable",
+        text:"下线"
+    }];
+
     //other
     var initData = {
-
+        status:userStatusList[0],
+        userStatusList:userStatusList
     };
 
     userStatusNode.html(userStatusTemplate(initData));
 
+
+    var $statusTypeSel = userStatusNode.find("select[name='statusType']");
+    $statusTypeSel.change(function(){
+        client().setUserStatus($(this).val());
+    });
 
     //用户状态变动
     client().onUserStatusChange(function(stanza){
@@ -35,14 +54,19 @@ function initUserStatus(){
         var jid = client().fullJid(client().authcid);
 
         var statusType = stanza.getAttribute("type");
+        if(!statusType){
+            statusType = userStatusList[0].value;
+        }
+
+        //不知是根据type判断还是根据show标签判断
+        var showDom = stanza.getElementsByTagName("show");
+        if(showDom.length > 0){
+            statusType = showDom[0].innerHTML;
+        }
 
         if(jid == from){
-
-            initData = {
-                statusMsg:statusType
-            };
-
-            userStatusNode.html(userStatusTemplate(initData));
+            userStatusNode.find(".xmpp-self-user-status").html(statusType);
+            $statusTypeSel.val(statusType);
         }
 
     });
