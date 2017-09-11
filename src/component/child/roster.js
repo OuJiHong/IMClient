@@ -8,6 +8,8 @@ import { Logger } from "../../service/logger";
 import $ from "jquery";
 import { client }  from "../login";
 import { openChat } from "../chat";
+import { msgStore } from "../../service/msgStore";
+import { Strophe } from "strophe.js";
 
 
 var logger = new Logger("roster");
@@ -30,6 +32,20 @@ function findAllItem(rosterNode){
     return  rosterNode.find(".roster-item");
 }
 
+/**
+ * 创建用户条目
+ * @param rosterNode
+ * @param infoObj
+ */
+function createRosterItem(rosterNode, infoObj){
+    var $rosterItem = $(rosterTemplate(infoObj));
+    rosterNode.append($rosterItem);
+
+    //未读消息数量监听
+    msgStore.onUnreadSizeChange(infoObj.jid, function(unreadSize){
+        $rosterItem.find(".xmpp-user-unread").html(unreadSize);
+    });
+}
 
 /**
  * 初始化花名册
@@ -56,8 +72,8 @@ function initRoster(){
             //移除存在的条目
             findRosterItem(rosterNode, jid).remove();
 
-            var rosterItem = rosterTemplate(info);
-            rosterNode.append(rosterItem);
+            createRosterItem(rosterNode, info);
+
         });
 
 
@@ -67,19 +83,20 @@ function initRoster(){
     rosterNode.on("click", ".roster-item", function(evt){
         var $this = $(this);
         var toJid = $this.attr("data-jid");
-        openChat(toJid);
+        var panel = openChat(toJid);
+
     });
 
 
     //监听用户状态
-    client().off("userStatusChange").onUserStatusChange(function(stanza, statusMsg){
+    client().onUserStatusChange(function(stanza){
 
         //不包括本身
         var from = client().bareJid(stanza.getAttribute("from"));
         var jid = client().fullJid(client().authcid);
 
         if(jid != from ){
-
+            var statusType = stanza.getAttribute("type");
             var name = stanza.getAttribute("name");
             var subscription = stanza.getAttribute("subscription");
             var curItem = findRosterItem(rosterNode, from);
@@ -93,17 +110,48 @@ function initRoster(){
                     subscription:subscription
                 };
 
-                var rosterItem = rosterTemplate(info);
-                rosterNode.append(rosterItem);
+                createRosterItem(rosterNode, info);
 
             }else{
                 //修改状态动作
-                curItem.find(".xmpp-user-status").html(statusMsg);
+                curItem.find(".xmpp-user-status").html(statusType);
             }
 
         }
 
+    });
 
+
+    //监听消息
+    client().onMessage(function(stanza){
+        var $stanza = $(stanza);
+        var from = client().bareJid($stanza.attr("from"));
+        //添加消息到缓存，定义数据格式
+        var subject = $stanza.find("subject");
+        var body = $stanza.find("body");
+        var msgObj = {
+            subject:subject.html(),
+            body:body.html(),
+            date:new Date(),
+            read:false,
+            receive:true
+        };
+
+        msgStore.addMsg(from, msgObj);
+
+    });
+
+
+    //监听消息状态
+    client().onChatStatusChange(function(stanza){
+        var $stanza = $(stanza);
+        var from = client().bareJid($stanza.attr("from"));
+        var statusDom = stanza.getElementsByTagNameNS(Strophe.NS.CHATSTATES, "*");
+        var statusVal = "gone";
+        if(statusDom.length > 0){
+            statusVal =  statusDom[0].tagName;
+        }
+        msgStore.emitChatStatus(from, [statusVal]);
 
     });
 

@@ -1,7 +1,7 @@
 <div class="xmpp-chat-pro">
     <form novalidate >
     <div class="xmpp-chat-header" popup-header  >
-        头部信息 -- {{jid}}
+        头部信息 -- {{jid}} (<span class="xmpp-chat-user-status"> </span>)
         <span class="xmpp-common-close-btn" data-xmpp-ref="{{panelId}}" >&times;</span>
     </div>
     <div>
@@ -9,10 +9,7 @@
 
 
         </div>
-        <textarea name="message">
-
-
-        </textarea>
+        <textarea name="message"></textarea>
         <button type="submit">发送</button>
     </div>
     </form>

@@ -28,17 +28,18 @@ function initUserStatus(){
 
 
     //用户状态变动
-    client().off("userStatusChange").onUserStatusChange(function(stanza, statusMsg){
-        logger.debug("用户状态改变：" + stanza.outerHTML + ">>" + statusMsg);
+    client().onUserStatusChange(function(stanza){
 
         //只判断本身
         var from = client().bareJid(stanza.getAttribute("from"));
         var jid = client().fullJid(client().authcid);
 
+        var statusType = stanza.getAttribute("type");
+
         if(jid == from){
 
             initData = {
-                statusMsg:statusMsg
+                statusMsg:statusType
             };
 
             userStatusNode.html(userStatusTemplate(initData));

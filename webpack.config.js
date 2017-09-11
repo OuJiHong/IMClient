@@ -12,14 +12,23 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const extractCss = new ExtractTextPlugin({filename:"[name]-[hash:7].css"});
 
+
+//设置不同环境运行配置
+var devtool = "eval-source-map";
+var publicPath = "";
+if(process.env.NODE_ENV == "production"){
+    devtool = "";
+    publicPath = "";
+}
+
 var config =  {
-    devtool : "eval-source-map",
+    devtool : devtool,
     entry : {
         main:__dirname + "/src/main.js"
     },
     output : {
         path:__dirname + "/dist",
-        publicPath:"",
+        publicPath:publicPath,
         filename:"[name]-[hash].js",
         chunkFilename: "[name].chunk-[hash].js"
     },

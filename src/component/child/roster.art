@@ -1,3 +1,10 @@
 <div style="border-bottom:solid 1px red;">
-    <a href="javascript:;"  class="roster-item"  data-jid="{{jid}}">{{index}}.{{jid}}</a>
+    <a href="javascript:;"  class="roster-item"  data-jid="{{jid}}">
+        {{index}}.{{jid}}
+
+        --<span class="xmpp-user-status"></span>
+        (<span class="xmpp-user-unread"></span>)
+
+    </a>
+
 </div>

@@ -90,6 +90,7 @@ Strophe.log = function(level, msg){
 
 const eventType = {
     message:"message",
+    chatStatusChange:"chatStatusChange",
     connectSuccess:"connectSuccess",
     connectStatusChange:"connectStatusChange",
     connectError:"connectError",
@@ -249,13 +250,25 @@ Client.prototype._initDataListener = function(){
 
     var messageHandler = function(stanza){
         logger.debug("收到来自‘"+stanza.getAttribute("from")+"’消息:" + stanza.innerHTML );
-        _this.emit(eventType.message, [stanza]);
+        var statusDom = stanza.getElementsByTagNameNS(Strophe.NS.CHATSTATES, "*");
+        var body = stanza.getElementsByTagName("body");
+        if(statusDom.length > 0){
+            _this.emit(eventType.chatStatusChange, [stanza]);
+        }
+
+        if(body.length > 0){
+            _this.emit(eventType.message, [stanza]);
+        }
+
+
        return keepLive;
     };
 
 
     var presenceHandler = function(stanza){
-        _this.emit(eventType.userStatusChange, [stanza, "success"]);
+        logger.debug("用户状态改变：" + stanza.outerHTML);
+
+        _this.emit(eventType.userStatusChange, [stanza]);
         return keepLive;
     };
 
@@ -329,7 +342,14 @@ Client.prototype.connect = function(){
 
     //connection.connect(jid, pass, callback, wait, hold, route, authcid);
 
+
+    _this.off(eventType.message);
+    _this.off(eventType.chatStatusChange);
+    _this.off(eventType.userStatusChange);
+
+
     connection.connect(jid, pass, callback, wait);
+
 
     _this._initDataListener();//初始化数据监听
 
@@ -583,6 +603,11 @@ Client.prototype.onMessage = function(handler){
     return this;
 };
 
+Client.prototype.onChatStatusChange = function(handler){
+    this.on(eventType.chatStatusChange, handler);
+    return this;
+};
+
 Client.prototype.onConnectSuccess = function(handler){
     this.on(eventType.connectSuccess, handler);
     return this;
@@ -607,6 +632,7 @@ Client.prototype.onUserStatusChange = function(handler){
     this.on(eventType.userStatusChange, handler);
     return this;
 };
+
 
 
 /**

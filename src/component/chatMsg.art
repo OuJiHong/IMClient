@@ -1,4 +1,8 @@
 <div>
-    收到消息》{{jid}}:{{msg}}
+    {{if receive}}
+    收到消息》{{jid}}:{{body}}
+    {{ else }}
+    <b>发送消息》</b>{{jid}}:{{body}}
+    {{/if}}
 
 </div>

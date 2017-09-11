@@ -43,6 +43,14 @@ function getAllUserItem(){
     return getChatUserContainer().find(".xmpp-chat-user-item");
 }
 
+/**
+ * 查找用户条目
+ * @param panelId
+ */
+function findUserItem(panelId){
+    var allUserItem = getAllUserItem();
+    return allUserItem.filter("[data-xmpp-ref="+panelId+"]");
+}
 
 /**
  * 定位面板设置的容器
@@ -94,26 +102,6 @@ function createChatPanel(jid){
     $panel.attr("id", panelId );
     $panel.html(chatPanelTemplate(initData));
 
-    //监听消息
-    client().onMessage(function(stanza){
-        var $stanza = $(stanza);
-        var from = client().bareJid($stanza.attr("from"));
-        if(jid == from){
-            //添加消息到面板
-            var subject = $stanza.find("subject");
-            var body = $stanza.find("body");
-            var msgObj = {
-                subject:subject.html(),
-                body:body.html()
-            };
-
-            //渲染区域
-            var renderArea = $panel.find(".xmpp-chat-content");
-            msgStore.addMsg(renderArea, chatMsgTemplate, msgObj);
-
-        }
-    });
-
     //绑定表单提交
     var $form = $panel.find("form");
     var $message = $form.find("[name='message']");
@@ -131,11 +119,23 @@ function createChatPanel(jid){
         }else{
             //发送数据
             client().sendMessage(jid, msg);
+            var msgObj = {
+                subject:"",
+                body:msg,
+                date:new Date(),
+                read:false,
+                receive:false
+            };
+
+            msgStore.addMsg(jid, msgObj);
+
         }
 
         $message.val("");
 
     });
+
+
 
     var $userItem = $(chatUserTemplate(initData));
 
@@ -175,9 +175,60 @@ function createChatPanel(jid){
     });
 
 
+    msgStore.onMessageChange(jid, function(){
+        if($panel.is(":visible")){
+            renderMsg($panel);
+        }
+    });
+
+    //消息数量发生改变
+    msgStore.onUnreadSizeChange(jid, function(unreadSize){
+        $userItem.find(".xmpp-chat-user-unread").html(unreadSize);
+    });
+
+    //聊天状态发生改变
+    msgStore.onChatStatusChange(jid, function(status){
+        $panel.find(".xmpp-chat-user-status").html(status);
+    });
+
     return $panel;
 
 }
+
+/**
+ * 自动滚动到底部
+ *
+ * @param renderArea
+ */
+var scrollTimerVal = null;
+function autoScroll(renderArea){
+    clearTimeout(scrollTimerVal);
+    scrollTimerVal = setTimeout(function(){
+        var $renderArea = $(renderArea);
+        var maxScrollTop = $renderArea.prop("scrollHeight") - $renderArea.height();
+        $renderArea.stop(true,true).animate({scrollTop:maxScrollTop});
+    },100);
+}
+
+
+/**
+ * 渲染视图
+ * @param panel
+ */
+function renderMsg(panel){
+    var jid = panel.attr("data-xmpp-chat-panel");
+    var renderArea = panel.find(".xmpp-chat-content");
+    var count = msgStore.render(jid, function(readMsgObj){
+        var msgHtml = chatMsgTemplate(readMsgObj);
+        renderArea.append(msgHtml);
+    });
+
+    if(count > 0){
+        autoScroll(renderArea);
+    }
+
+}
+
 
 
 /**
@@ -189,13 +240,17 @@ function activePanel(panel){
     //是否显示用户条目
     var allUserItem = getAllUserItem();
     allUserItem.removeClass("active");
-    var refUserItem = allUserItem.filter("[data-xmpp-ref="+panel.attr("id")+"]");
+    var refUserItem = findUserItem(panel.attr("id"));
     refUserItem.addClass("xmpp-listable").addClass("active");
 
     //显示指定面板
     var allPanel = getAllPanel();
     allPanel.hide();
     panel.show();
+
+    //读取消息
+    renderMsg(panel);
+
 
     if(allUserItem.filter(".xmpp-listable").length > 1){
         getChatUserContainer().show();
@@ -217,7 +272,7 @@ function deactivePanel(panel){
 
 
     var allUserItem = getAllUserItem();
-    var refUserItem = allUserItem.filter("[data-xmpp-ref="+panel.attr("id")+"]");
+    var refUserItem = findUserItem(panel.attr("id"));
     refUserItem.removeClass("xmpp-listable");
     panel.hide();
 
@@ -244,6 +299,7 @@ function openChat(toJid){
 
     activePanel(panel);
 
+    return panel;
 }
 
 /**
@@ -255,7 +311,7 @@ function closeChat(toJid){
 
     deactivePanel(panel);
 
-
+    return panel;
 }
 
 
