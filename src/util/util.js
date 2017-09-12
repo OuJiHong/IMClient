@@ -562,6 +562,30 @@ function alert(msg, callback){
     });
 
 }
+
+
+/**
+ * 确认框
+ * @param msg
+ * @param callback
+ */
+function confirm(msg, callback){
+
+    return  dialog({
+        title:"确认提示",
+        content:msg,
+        ok:function(){
+            callback && callback.call(this, true);
+        },
+        cancel:function(){
+            callback && callback.call(this, false);
+        }
+    });
+
+}
+
+
+
 /**
  * 转化表单数据为对象
  * @param form
@@ -684,6 +708,7 @@ var util = {
     closePopup:closePopup,
     dialog:dialog,
     alert:alert,
+    confirm:confirm,
     initMoveAble:initMoveAble,
     formData:formData,
     isEmpty:isEmpty,

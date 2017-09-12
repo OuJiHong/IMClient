@@ -17,6 +17,8 @@ $(function(){
 });
 
 
+//test
+window.util = util;
 
 
 

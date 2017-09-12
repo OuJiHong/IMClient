@@ -55,9 +55,6 @@ function initClient(username, password){
     //连接
     client.connect();
 
-    //test
-    window.client = client;
-
     return client;
 }
 
@@ -89,6 +86,7 @@ function LoginInit() {
 
     hostPopup.open();
 
+    return $form;
 }
 
 /**
