@@ -161,6 +161,10 @@
     text-decoration:none;
 }
 
+.util-dialog-close:after{
+    content:"";
+}
+
 .util-dialog-close:hover{
     color:red;
 
@@ -188,6 +192,9 @@
     text-align:center;
 }
 
+.util-dialog-footer:after{
+    content:"";
+}
 
 .util-dialog-btn{
     display:inline-block;

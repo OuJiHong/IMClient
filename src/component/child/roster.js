@@ -89,7 +89,7 @@ function initRoster(){
 
 
     //监听用户状态
-    client().onUserStatusChange(function(stanza){
+    client().on("presence", function(stanza){
 
         //不包括本身
         var from = client().bareJid(stanza.getAttribute("from"));
@@ -123,35 +123,43 @@ function initRoster(){
 
 
     //监听消息
-    client().onMessage(function(stanza){
+    var chatStatusMap = {
+        active:"激活聊天",
+        composing:"正在输入",
+        paused:"暂停输入",
+        gone:"结束会话"
+    };
+
+    client().on("message", function(stanza){
         var $stanza = $(stanza);
         var from = client().bareJid($stanza.attr("from"));
         //添加消息到缓存，定义数据格式
         var subject = $stanza.find("subject");
         var body = $stanza.find("body");
-        var msgObj = {
-            subject:subject.html(),
-            body:body.html(),
-            date:new Date(),
-            read:false,
-            receive:true
-        };
+        if(body.length > 0){
+            var msgObj = {
+                subject:subject.html(),
+                body:body.html(),
+                date:new Date(),
+                read:false,
+                receive:true
+            };
 
-        msgStore.addMsg(from, msgObj);
+            msgStore.addMsg(from, msgObj);
+        }else{
+            //查找状态:active,composing,paused,gone
+            var statusDom = stanza.getElementsByTagNameNS(Strophe.NS.CHATSTATES, "*");
+            var statusVal = "gone";
+            if(statusDom.length > 0){
+                statusVal =  statusDom[0].tagName;
+            }
+            statusVal = statusVal.toLowerCase();
+            var  statusText = chatStatusMap[statusVal];
+            //触发动作
+            msgStore.emitChatStatus(from, [statusText]);
 
-    });
-
-
-    //监听消息状态
-    client().onChatStatusChange(function(stanza){
-        var $stanza = $(stanza);
-        var from = client().bareJid($stanza.attr("from"));
-        var statusDom = stanza.getElementsByTagNameNS(Strophe.NS.CHATSTATES, "*");
-        var statusVal = "gone";
-        if(statusDom.length > 0){
-            statusVal =  statusDom[0].tagName;
         }
-        msgStore.emitChatStatus(from, [statusVal]);
+
 
     });
 

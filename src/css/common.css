@@ -157,6 +157,10 @@ header,nav,section,article ,aside,footer{
     cursor:pointer;
 }
 
+.xmpp-common-close-btn:after{
+    content:"";
+}
+
 .xmpp-common-close-btn:hover{
     color:red;
 }

@@ -47,8 +47,7 @@ function initUserStatus(){
     });
 
     //用户状态变动
-    client().onUserStatusChange(function(stanza){
-
+    client().on("presence", function(stanza){
         //只判断本身
         var from = client().bareJid(stanza.getAttribute("from"));
         var jid = client().fullJid(client().authcid);
@@ -65,6 +64,7 @@ function initUserStatus(){
         }
 
         if(jid == from){
+            logger.debug("当前用户状态变动:" + statusType);
             userStatusNode.find(".xmpp-self-user-status").html(statusType);
             $statusTypeSel.val(statusType);
         }

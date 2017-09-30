@@ -31,9 +31,9 @@ Logger.prototype.logLevel = globalLogLevel;
  * 普通消息
  * @param msg
  */
-Logger.prototype.log = function(msg){
+Logger.prototype.log = function(msg, obj){
     if(this.logLevel >= LevelType.info){
-        console.log("["+this.name+" log ] - " + msg);
+        console.log("["+this.name+" log ] - " + msg, obj);
     }
 
 }
@@ -43,9 +43,9 @@ Logger.prototype.log = function(msg){
  * 普通消息
  * @param msg
  */
-Logger.prototype.info = function(msg){
+Logger.prototype.info = function(msg, obj){
     if(this.logLevel >= LevelType.info) {
-        console.log("[" + this.name + " info ] - " + msg);
+        console.log("[" + this.name + " info ] - " + msg, obj);
     }
 }
 
@@ -53,13 +53,13 @@ Logger.prototype.info = function(msg){
  * 调试信息
  * @param msg
  */
-Logger.prototype.debug = function(msg){
+Logger.prototype.debug = function(msg, obj){
     if(this.logLevel >= LevelType.debug){
         var debugInfo = "["+this.name+" debug ] - " + msg;
         if(console.debug != null){
-            console.debug(debugInfo);
+            console.debug(debugInfo, obj);
         }else{
-            console.log(debugInfo);
+            console.log(debugInfo, obj);
         }
 
     }
@@ -85,9 +85,9 @@ Logger.prototype.warn = function(msg){
     if(this.logLevel >= LevelType.warn) {
         var warnInfo = "[" + this.name + "  warn] - " + msg;
         if (console.warn != null) {
-            console.warn(warnInfo);
+            console.warn(warnInfo, obj);
         } else {
-            console.log(warnInfo);
+            console.log(warnInfo, obj);
         }
     }
 
@@ -100,7 +100,7 @@ Logger.prototype.warn = function(msg){
  */
 Logger.prototype.fatal = function(msg){
     if(this.logLevel >= LevelType.fatal) {
-        console.error("[" + this.name + " fatal] - " + msg);
+        console.error("[" + this.name + " fatal] - " + msg, obj);
     }
 }
 

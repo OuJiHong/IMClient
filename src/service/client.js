@@ -87,15 +87,12 @@ Strophe.log = function(level, msg){
     }
 }
 
-
-const eventType = {
-    message:"message",
-    chatStatusChange:"chatStatusChange",
-    connectSuccess:"connectSuccess",
-    connectStatusChange:"connectStatusChange",
-    connectError:"connectError",
-    disconnect:"disconnect",
-    userStatusChange:"userStatusChange"
+/**
+ * 自定义事件类型
+ * @type {{connectStatusChange: string}}
+ */
+const customEventType = {
+    connectStatusChange:"connectStatusChange"
 };
 
 //连接状态翻译
@@ -208,78 +205,6 @@ Client.prototype.nodeJid = function(jid){
     return val ? val.toLowerCase() : val;
 }
 
-/**
- * 清除监听
- *
- */
-Client.prototype.clearListener = function(){
-    var cacheHandlers = this._cacheHandlers;
-    while(cacheHandlers.length > 0){
-        var handler = cacheHandlers.pop();
-        this.connection.deleteHandler(handler);
-    }
-
-    if(this.clearListenerStatus != null){
-        this.clearListenerStatus();
-    }
-
-
-}
-
-
-/**
- * 添加数据监听
- * 添加数据监听
- */
-Client.prototype._initDataListener = function(){
-
-    var _this = this;
-    var cacheHandlers = this._cacheHandlers;
-
-    this.clearListener();//清除监听
-
-    var keepLive = true;
-
-    var messageHandler = function(stanza){
-        logger.debug("收到来自‘"+stanza.getAttribute("from")+"’消息:" + stanza.innerHTML );
-        var statusDom = stanza.getElementsByTagNameNS(Strophe.NS.CHATSTATES, "*");
-        var body = stanza.getElementsByTagName("body");
-        if(statusDom.length > 0){
-            _this.emit(eventType.chatStatusChange, [stanza]);
-        }
-
-        if(body.length > 0){
-            _this.emit(eventType.message, [stanza]);
-        }
-
-
-       return keepLive;
-    };
-
-
-    var presenceHandler = function(stanza){
-        logger.debug("用户状态改变：" + stanza.outerHTML);
-
-        _this.emit(eventType.userStatusChange, [stanza]);
-        return keepLive;
-    };
-
-
-
-    var ref1 =  this.connection.addHandler(messageHandler, null , "message");
-    var ref2 = this.connection.addHandler(presenceHandler, null, 'presence');
-
-    cacheHandlers.push(ref1);
-    cacheHandlers.push(ref2);
-
-    //提供改变内部变量的函数
-    this.clearListenerStatus = function(){
-        keepLive = false;
-    };
-
-}
-
-
 
  /**
  * 建立连接
@@ -296,7 +221,7 @@ Client.prototype.connect = function(){
 
     var resource = Strophe.getResourceFromJid(this.username);
     if(!resource){
-        resource = this.generateResource();
+        resource = this.generateResource();//此属性可用于同资源单点登录
     }
 
     var jid = this.fullJid(this.username);
@@ -305,26 +230,8 @@ Client.prototype.connect = function(){
     //回调处理状态
     var callback = function(status){
         let statusMsg = statusMap[status];
-        if(status == Strophe.Status.CONNECTED  || status === Strophe.Status.ATTACHED){
-            //连接成功
-            _this.setUserStatus();//初始化用户在线状态
-
-            _this.emit(eventType.connectSuccess, [status, statusMsg]);
-
-            //设置别名
-            _this.authzid = connection.authzid;//授权标识
-            _this.authcid = connection.authcid;//认证标识（用户名称）
-            _this.pass = connection.pass;//认证标识（密码）
-            _this.servtype = connection.servtype;//服务类型（MD5）
-
-        }else if(status == Status.ERROR || status == Status.AUTHFAIL || status == Status.CONNFAIL || status == Status.CONNTIMEOUT){
-            _this.emit(eventType.connectError, [status, statusMsg]);
-        }else if(status == Status.DISCONNECTED){
-            _this.emit(eventType.disconnect, [status, statusMsg]);
-        }
-
         //连接状态改变
-        _this.emit(eventType.connectStatusChange, [status, statusMsg]);
+        _this.emit(customEventType.connectStatusChange, [status, statusMsg]);
     };
 
     var wait = this.requestTimeout;//超时时间
@@ -335,15 +242,8 @@ Client.prototype.connect = function(){
     //connection.connect(jid, pass, callback, wait, hold, route, authcid);
 
 
-    _this.off(eventType.message);
-    _this.off(eventType.chatStatusChange);
-    _this.off(eventType.userStatusChange);
-
 
     connection.connect(jid, pass, callback, wait);
-
-
-    _this._initDataListener();//初始化数据监听
 
     return this;
 
@@ -456,7 +356,7 @@ Client.prototype.addChatStatus = function(msgObj, status, type){
  * 优先级：<priority/>
  *
  */
-Client.prototype.setUserStatus = function(status){
+Client.prototype.setUserStatus = function(status, callBack){
     var _this = this;
     var changeTimeout =  this.requestTimeout;//超时时间
     var connection = this.connection;
@@ -472,14 +372,14 @@ Client.prototype.setUserStatus = function(status){
         //发送出席状态
         connection.sendPresence(presence, function(stanza){
             //success
-            _this.emit(eventType.userStatusChange, [stanza, "success"]);
+            callBack && callBack(stanza, "success");
         }, function(stanza){
             //error
             if(stanza == null){
                 //表示超时
-                _this.emit(eventType.userStatusChange,[stanza,"error"]);
+                callBack && callBack(stanza, "timeout");
             }else{
-                _this.emit(eventType.userStatusChange, [stanza, "timeout"]);
+                callBack && callBack(stanza, "error");
             }
         }, changeTimeout);
     }
@@ -531,6 +431,7 @@ Client.prototype.getProfile = function(){
  * @returns {Client}
  */
 Client.prototype.on = function(eventName, handler){
+    var _this = this;
     var connection = this.connection;
     var eventMap = this._cacheEventMap;
     if(eventName != null && typeof handler == "function"){
@@ -539,10 +440,21 @@ Client.prototype.on = function(eventName, handler){
         if(callbacks == null){
             callbacks = $.Callbacks("stopOnFalse");
             eventMap[eventName] = callbacks;
+            //初始化是空的，所以绑定内部事件(非自定义事件)
+            if(customEventType[eventName] == null){
+                var handlerRef = connection.addHandler(function(stanza){
+                    callbacks.fireWith(_this, [stanza]);
+                }, null , eventName, null, null, null, null	);
+                callbacks.handlerRef = handlerRef;
+            }
+
         }
 
         callbacks.add(handler);
+
+
     }
+
 
     return this;
 };
@@ -558,6 +470,10 @@ Client.prototype.off = function(eventName){
     if(eventName != null){
         var callbacks = eventMap[eventName];
         if(callbacks != null){
+            if(callbacks.handlerRef != null){
+                connection.deleteHandler(callbacks.handlerRef);
+            }
+
             delete eventMap[eventName];
         }
 
@@ -584,40 +500,16 @@ Client.prototype.emit = function(eventName, args){
 
 };
 
-Client.prototype.onMessage = function(handler){
-    this.on(eventType.message, handler);
-    return this;
-};
-
-Client.prototype.onChatStatusChange = function(handler){
-    this.on(eventType.chatStatusChange, handler);
-    return this;
-};
-
-Client.prototype.onConnectSuccess = function(handler){
-    this.on(eventType.connectSuccess, handler);
-    return this;
-};
-
+/**
+ * 连接发生改变
+ * @param handler
+ * @returns {Client}
+ */
 Client.prototype.onConnectStatusChange = function(handler){
-    this.on(eventType.connectStatusChange, handler);
+    this.on(customEventType.connectStatusChange, handler);
     return this;
 }
 
-Client.prototype.onConnectError = function(handler){
-    this.on(eventType.connectError, handler);
-    return this;
-};
-
-Client.prototype.onDisConnect = function(handler){
-    this.on(eventType.disconnect, handler);
-    return this;
-};
-
-Client.prototype.onUserStatusChange = function(handler){
-    this.on(eventType.userStatusChange, handler);
-    return this;
-};
 
 
 

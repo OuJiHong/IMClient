@@ -3,6 +3,7 @@
  *
  */
 
+import { Strophe } from "strophe.js";
 import { Client } from "../service/client";
 import $ from "jquery";
 import loginTemplate from './login.art'
@@ -31,24 +32,43 @@ function initClient(username, password){
         currentClient.disconnect("用户重新登录 - " + username);
     }
 
+    var Status = Strophe.Status;
 
     var client = new Client(username, password);
 
     var msgOperation = util.showLoading("正在登录...");
     client.onConnectStatusChange(function(status, statusMsg){
         logger.debug("initClient:" + status + ">>" + statusMsg);
+
+        if(status == Status.CONNECTED  || status === Status.ATTACHED){
+            //连接成功
+            client.setUserStatus();//初始化用户在线状态
+
+
+            //connection.authzid;//授权标识
+            //connection.authcid;//认证标识（用户名称）
+            //connection.pass;//认证标识（密码）
+            //connection.servtype;//服务类型（MD5）
+
+
+            hostPopup.close();
+            msgOperation.close();
+            //进入联系人面板
+            initManager();
+
+        }else if(status == Status.ERROR || status == Status.AUTHFAIL || status == Status.CONNFAIL || status == Status.CONNTIMEOUT){
+            msgOperation.close();
+            util.showError(statusMsg);
+
+        }else if(status == Status.DISCONNECTED){
+            msgOperation.close();
+            util.showError(statusMsg);
+        }
+
     });
 
-    client.onConnectSuccess(function(status, statusMsg){
-        hostPopup.close();
-        msgOperation.close();
-        //进入联系人面板
-        initManager();
-    });
-
-    client.onConnectError(function(status, statusMsg){
-        msgOperation.close();
-        util.showError(statusMsg);
+    client.on("error", function(stanza){
+        logger.error("receive error:" , stanza);
     });
 
 
