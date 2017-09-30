@@ -106,6 +106,14 @@ function createChatPanel(jid){
     var $form = $panel.find("form");
     var $message = $form.find("[name='message']");
 
+    var inputTimeVal = null;
+    $message.on("change", function(evt){
+        window.clearTimeout(inputTimeVal);
+        inputTimeVal = setTimeout(function(){
+            client().sendMessage(jid, null, "composing");
+        },200);
+    });
+
     //提交信息
     $form.submit(function(evt){
         evt.preventDefault();
@@ -118,7 +126,7 @@ function createChatPanel(jid){
 
         }else{
             //发送数据
-            client().sendMessage(jid, msg);
+            client().sendMessage(jid, msg, "active");
             var msgObj = {
                 subject:"",
                 body:msg,
