@@ -50,7 +50,7 @@ function initUserStatus(){
     client().on("presence", function(stanza){
         //只判断本身
         var from = client().bareJid(stanza.getAttribute("from"));
-        var jid = client().fullJid(client().authcid);
+        var jid = client().currentJid();
 
         var statusType = stanza.getAttribute("type");
         if(!statusType){

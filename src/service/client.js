@@ -167,6 +167,15 @@ Client.prototype.generateResource = function () {
     return '/client-' + Math.floor(Math.random()*139749825).toString();
 };
 
+/**
+ * 当前用户jid
+ *
+ */
+Client.prototype.currentJid = function(){
+    var connection = this.connection;
+    return this.fullJid(connection.authcid);
+};
+
 
 /**
  * 完整名称
@@ -421,7 +430,13 @@ Client.prototype.getProfile = function(){
 
 };
 
+/**
+ * 获取当前用户注册信息
+ *
+ */
+Client.prototype.getRegistration = function(){
 
+};
 
 
 /**

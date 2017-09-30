@@ -93,7 +93,7 @@ function initRoster(){
 
         //不包括本身
         var from = client().bareJid(stanza.getAttribute("from"));
-        var jid = client().fullJid(client().authcid);
+        var jid = client().currentJid();
 
         if(jid != from ){
             var statusType = stanza.getAttribute("type");
